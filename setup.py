@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="FractalTree",
-    version="0.0.58",
+    version="0.0.59",
     url="https://github.com/GaetanDesrues/fractal-tree",
     packages=["FractalTree"],
     include_package_data=True,
