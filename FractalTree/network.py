@@ -15,7 +15,7 @@ class PurkinjeNetwork(Mesh):
     created by `FractalTree.generator.PurkinjeGenerator.export_to_vtk`
     """
 
-    @tf.timer
+    # @tf.timer
     def compute_geodesic(self, name="distances", b=0, cond=None, optimized=True):
         """
         C++ + prange parallelism. Best option so far
@@ -28,7 +28,7 @@ class PurkinjeNetwork(Mesh):
         c = tf.none(cond, np.ones(n))
         to_compute = self.end_nodes if optimized else range(n)
 
-        log.info(f"Starting to compute geodesic distance")
+        # log.info(f"Starting to compute geodesic distance")
         d = geodesic_distance(idx=to_compute, b=b, n=n, pts=self.pts, pap=pap, cond=c)
 
         self.addPointData(d, name)
