@@ -40,7 +40,7 @@ class Curvature:
         self.m.write(type="obj")
 
     def compute_curv(self):
-        cu = self.m.compute_curvature("curvature", method='mean')
+        cu = self.m.compute_curvature("curvature", method="mean")
         cu = np.abs(cu)
         cu = (cu - cu.mean()) / (cu.std())
         cu = (cu - cu.min()) / np.max(cu - cu.min())
@@ -54,7 +54,7 @@ class Curvature:
         self.curv = cu
 
         cu = tf.beta_(1, 5, cu)  # filtered curvature
-        nmin, nmax = 3, 15
+        nmin, nmax = 6, 10  # 3, 15
         cu = (nmax - nmin) * cu + nmin  # mapped to n segments
         self.n_segments = cu
 
@@ -117,7 +117,9 @@ def Fractal_Tree_3D(param, use_curvature=False, log_level=logging.INFO):
     if tri >= 0:
         init_tri = tri
     else:
-        log.error("initial point not in mesh, maybe 'Bug when coord is on a mesh vertex'")
+        log.error(
+            "initial point not in mesh, maybe 'Bug when coord is on a mesh vertex'"
+        )
         sys.exit(0)
 
     # Initialize the dictionary that stores the branches objects
