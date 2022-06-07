@@ -47,3 +47,8 @@ param=Parameters()
 
 branches, nodes = Fractal_Tree_3D(param)
 ```
+
+
+
+### Example: computing distances on purkinje network
+![](examples/geodesic/dists.png)
