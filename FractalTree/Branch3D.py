@@ -7,6 +7,8 @@ import logging
 import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
 from scipy.spatial import cKDTree
+from MeshObject import Mesh, Plotter
+import treefiles as tf
 
 pool = ThreadPool(16)
 
@@ -51,6 +53,8 @@ class Branch:
         brother_nodes,
         Nsegments,
         fasc_nodes=None,
+        fname=None,
+        use_curvature=False,
     ):
         #        self.nnodes=0
         self.child = [0, 0]
@@ -73,6 +77,7 @@ class Branch:
         self.queue.append(nodes.nodes[init_node])
         self.triangles.append(init_tri)
         grad = nodes.gradient(self.queue[0])
+        # print("self.queue[0]", self.queue[0])
         dir = (dir + w * grad) / np.linalg.norm(dir + w * grad)
         #    print nodes.nodes[init_node]+dir*l/Nsegments
 
@@ -80,15 +85,73 @@ class Branch:
         #     if init_node not in fasc_nodes and self.queue[0][2] > -0.4:
         #         self.growing = False
 
+        if use_curvature:
+            m_ = Mesh.load(fname)
+            m_["Normals"] = normals_ = -m_.point_normals / np.linalg.norm(
+                m_.point_normals
+            )
+
         for i in range(1, Nsegments):
+            if use_curvature:
+                n_ = normals_[m_.closestPoint(self.queue[i - 1]).idx]
+                old_dir = dir
+                dir_tmp = np.cross(np.cross(n_, dir), n_)
+                dir = dir_tmp / np.linalg.norm(dir_tmp) * np.linalg.norm(dir)
+
             intriangle = self.add_node_to_queue(
                 mesh, self.queue[i - 1], dir * l / Nsegments
             )
+
+            # if use_curvature:
+                # camm = [
+                #     (260.48070478297586, 78.39153389871353, 199.03285793494194),
+                #     (249.34242981274656, 81.31688102198972, 215.41573649872345),
+                #     (0.5535931873021226, -0.6690829805660479, 0.4958452864448053),
+                # ]
+                # # dd = np.linalg.norm(
+                # #     np.array([252.58058644, 80.41447762, 211.26319211])
+                # #     - self.queue[i - 1]
+                # # )
+                # if np.allclose(
+                #     self.queue[i - 1],
+                #     np.array([252.58058644, 80.41447762, 211.26319211]),
+                #     rtol=0.05,
+                #     atol=0.05,
+                # ):
+                #     with Plotter(no_orientation=True, off_screen=False) as p:
+                #         p.camera_position = camm
+                #
+                #         p.add_mesh(m_)
+                #         p.add_points(self.queue, color="b")
+                #         p.add_point(self.queue[i - 1], point_color="r")
+                #         p.add_vector(
+                #             self.queue[i - 1], direction=old_dir, scale=3, color="r"
+                #         )
+                #         p.add_vector(
+                #             self.queue[i - 1], direction=dir, scale=3, color="g"
+                #         )
+                #         p.add_vectors(
+                #             m_,
+                #             "Normals",
+                #             glyph_kw=dict(scale="Normals", factor=40),
+                #             show_edges=False,
+                #             color="orange",
+                #         )
+                #         fname__ = f"/tmp/aze/img_{tf.get_string(10)}.png"
+                #         print(fname__, i, self.queue[i - 1])
+                #         p.screenshot(fname__)
+
             # print 'intriangle',intriangle
             if not intriangle:
                 log.debug(f"Point not in triangle {i}")
                 #                print self.queue[i-1]+dir*l/50.
                 self.growing = False
+                # with Plotter() as p:
+                #     p.add_mesh(Mesh.load(fname))
+                #     p.add_points(self.queue, color="b")
+                #     p.add_point(self.queue[i - 1], point_color="r")
+                #     p.add_vector(self.queue[i - 1], direction=dir, scale=3, color="r")
+                # breakpoint()
                 break
             collision = nodes.collision(self.queue[i])
             if collision[1] < l / 5:
@@ -146,7 +209,7 @@ class Branch:
         else:
             #            print point, triangle
             success = False
-        # print 'Success? ',success
+        # print("Success? ", success)
         return success
 
 

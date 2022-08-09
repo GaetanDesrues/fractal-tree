@@ -11,7 +11,7 @@ from FractalTree.parameters import Parameters
 
 class PurkinjeGenerator:
     def __init__(self, out_dir: Union[str, tf.Tree]):
-        self.root = out_dir
+        self.root = tf.dump(out_dir)
         self.f_endo = None
 
         self.vent = None
