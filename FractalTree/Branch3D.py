@@ -7,8 +7,7 @@ import logging
 import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
 from scipy.spatial import cKDTree
-from MeshObject import Mesh, Plotter
-import treefiles as tf
+
 
 pool = ThreadPool(16)
 
@@ -86,6 +85,8 @@ class Branch:
         #         self.growing = False
 
         if use_curvature:
+            from MeshObject import Mesh
+
             m_ = Mesh.load(fname)
             m_["Normals"] = normals_ = -m_.point_normals / np.linalg.norm(
                 m_.point_normals
@@ -103,43 +104,43 @@ class Branch:
             )
 
             # if use_curvature:
-                # camm = [
-                #     (260.48070478297586, 78.39153389871353, 199.03285793494194),
-                #     (249.34242981274656, 81.31688102198972, 215.41573649872345),
-                #     (0.5535931873021226, -0.6690829805660479, 0.4958452864448053),
-                # ]
-                # # dd = np.linalg.norm(
-                # #     np.array([252.58058644, 80.41447762, 211.26319211])
-                # #     - self.queue[i - 1]
-                # # )
-                # if np.allclose(
-                #     self.queue[i - 1],
-                #     np.array([252.58058644, 80.41447762, 211.26319211]),
-                #     rtol=0.05,
-                #     atol=0.05,
-                # ):
-                #     with Plotter(no_orientation=True, off_screen=False) as p:
-                #         p.camera_position = camm
-                #
-                #         p.add_mesh(m_)
-                #         p.add_points(self.queue, color="b")
-                #         p.add_point(self.queue[i - 1], point_color="r")
-                #         p.add_vector(
-                #             self.queue[i - 1], direction=old_dir, scale=3, color="r"
-                #         )
-                #         p.add_vector(
-                #             self.queue[i - 1], direction=dir, scale=3, color="g"
-                #         )
-                #         p.add_vectors(
-                #             m_,
-                #             "Normals",
-                #             glyph_kw=dict(scale="Normals", factor=40),
-                #             show_edges=False,
-                #             color="orange",
-                #         )
-                #         fname__ = f"/tmp/aze/img_{tf.get_string(10)}.png"
-                #         print(fname__, i, self.queue[i - 1])
-                #         p.screenshot(fname__)
+            # camm = [
+            #     (260.48070478297586, 78.39153389871353, 199.03285793494194),
+            #     (249.34242981274656, 81.31688102198972, 215.41573649872345),
+            #     (0.5535931873021226, -0.6690829805660479, 0.4958452864448053),
+            # ]
+            # # dd = np.linalg.norm(
+            # #     np.array([252.58058644, 80.41447762, 211.26319211])
+            # #     - self.queue[i - 1]
+            # # )
+            # if np.allclose(
+            #     self.queue[i - 1],
+            #     np.array([252.58058644, 80.41447762, 211.26319211]),
+            #     rtol=0.05,
+            #     atol=0.05,
+            # ):
+            #     with Plotter(no_orientation=True, off_screen=False) as p:
+            #         p.camera_position = camm
+            #
+            #         p.add_mesh(m_)
+            #         p.add_points(self.queue, color="b")
+            #         p.add_point(self.queue[i - 1], point_color="r")
+            #         p.add_vector(
+            #             self.queue[i - 1], direction=old_dir, scale=3, color="r"
+            #         )
+            #         p.add_vector(
+            #             self.queue[i - 1], direction=dir, scale=3, color="g"
+            #         )
+            #         p.add_vectors(
+            #             m_,
+            #             "Normals",
+            #             glyph_kw=dict(scale="Normals", factor=40),
+            #             show_edges=False,
+            #             color="orange",
+            #         )
+            #         fname__ = f"/tmp/aze/img_{tf.get_string(10)}.png"
+            #         print(fname__, i, self.queue[i - 1])
+            #         p.screenshot(fname__)
 
             # print 'intriangle',intriangle
             if not intriangle:
