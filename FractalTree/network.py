@@ -204,9 +204,9 @@ class PurkinjeNetwork(Mesh):
         )
 
         mp = PurkinjeNetwork.from_elements(pts, cells)
-        mp.clean()  # remove orpheans nodes
         for x in self.pointDataNames:
             mp.addPointData(self.getPointDataArray(x)[keep_mask], x)
+        mp.clean()  # remove orpheans nodes
 
         if inplace:
             self.data = mp.data
