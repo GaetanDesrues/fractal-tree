@@ -16,7 +16,7 @@ class PurkinjeNetwork(Mesh):
     """
 
     CYTHON = True
-    CYTHON_PARALLEL = True
+    PROCESS_PARALLEL = True
 
     # @tf.timer
     def compute_geodesic(self, name="distances", b=0, cond=None, optimized=True):
@@ -109,7 +109,7 @@ class PurkinjeNetwork(Mesh):
         """
         n = self.nbPoints
 
-        if self.CYTHON_PARALLEL:
+        if self.PROCESS_PARALLEL:
             # Parallel
             geo = partial(
                 python_geodesic, b=b, pts=self.pts, pap=self.pointIdsAroundPoint, n=n
