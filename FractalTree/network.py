@@ -15,12 +15,19 @@ class PurkinjeNetwork(Mesh):
     created by `FractalTree.generator.PurkinjeGenerator.export_to_vtk`
     """
 
+    CYTHON = True
+    CYTHON_PARALLEL = True
+
     # @tf.timer
     def compute_geodesic(self, name="distances", b=0, cond=None, optimized=True):
         """
         C++ + prange parallelism. Best option so far
         Compute for each point the shortest path from node b=0
         """
+        if not self.CYTHON:
+            # python implementation to avoid cython compile errors
+            return self.compute_distance(name, b=b)
+
         from FractalTree.core.rect import geodesic_distance
 
         n = self.nbPoints
@@ -36,27 +43,14 @@ class PurkinjeNetwork(Mesh):
             self.write(self.filename)
         return d
 
-    def compute_distance(self, name="distances", optimized=True):
+    def compute_distance(self, name="distances", b=0):
         """
         Main method to compute geodesic distances on network
         :param name:
         :param optimized:
         """
-        # # conductivity
-        # idx = 134
-        # pap = m.pointIdsAroundPoint
-        # keep = [idx]
-        # for _ in range(3):
-        #     x = []
-        #     for i in np.unique(keep):
-        #         x.extend(pap[i])
-        #     keep.extend(x)
-        # cond = np.ones(m.nbPoints)
-        # cond[keep] = 0
-        cond = None
-
-        # d = self.python_distances()
-        d = self.compute_distances(cond=cond, optimized=optimized)
+        d = self.python_distances(b)
+        # d = self.compute_distances(cond=cond, optimized=optimized)
         self.addPointData(d, name)
         if self.filename:
             self.write(self.filename)
@@ -103,33 +97,34 @@ class PurkinjeNetwork(Mesh):
     #     _dist[to_compute] = n_dist
     #     return _dist
 
-    # @tf.timer
-    # def python_distances(self):
-    #     """
-    #     Python version of `PurkinjeNetwork.compute_distances`
-    #
-    #     Ex (compute purk network distances on 1449 pts):
-    #     sequential: 28.7s
-    #     parallel: 8.3s
-    #     parallel (cython): 2.5s
-    #     """
-    #     n = self.nbPoints
-    #
-    #     # Parallel
-    #     geo = partial(
-    #         python_geodesic, b=0, pts=self.pts, pap=self.pointIdsAroundPoint, n=n
-    #     )
-    #     with Pool() as pool:
-    #         _dist = np.array(list(tqdm(pool.imap(geo, range(n)), total=n)))
-    #
-    #     # # Sequential
-    #     # _dist = np.zeros(n)
-    #     # for i in tqdm(range(self.nbPoints)):
-    #     #     _dist[i] = python_geodesic(
-    #     #         i, 0, pts=self.pts, pap=self.pointIdsAroundPoint, n=n
-    #     #     )
-    #
-    #     return _dist
+    @tf.timer
+    def python_distances(self, b=0):
+        """
+        Python version of `PurkinjeNetwork.compute_distances`
+
+        Ex (compute purk network distances on 1449 pts):
+        sequential: 28.7s
+        parallel: 8.3s
+        parallel (cython): 2.5s
+        """
+        n = self.nbPoints
+
+        if self.CYTHON_PARALLEL:
+            # Parallel
+            geo = partial(
+                python_geodesic, b=b, pts=self.pts, pap=self.pointIdsAroundPoint, n=n
+            )
+            with Pool() as pool:
+                _dist = np.array(list(tqdm(pool.imap(geo, range(n)), total=n)))
+        else:
+            # Sequential
+            _dist = np.zeros(n)
+            for i in tqdm(range(self.nbPoints)):
+                _dist[i] = python_geodesic(
+                    i, 0, pts=self.pts, pap=self.pointIdsAroundPoint, n=n
+                )
+
+        return _dist
 
     @property
     def end_nodes(self):
