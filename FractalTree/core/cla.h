@@ -81,7 +81,7 @@ Real c_geodesic_distance(Int a,
     VInt origins, new_origins, around;
     origins.push_back(a);
 
-	while ((origins.size() > 0) and (n_iter < n)) {
+	while ((origins.size() > 0) && (n_iter < n)) {
 		n_iter++;
 		dmin = (endnodes.size() > 0) ? vmin(endnodes) : 1e10;
 		new_origins.clear();
